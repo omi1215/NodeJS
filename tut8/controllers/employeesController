@@ -1,0 +1,69 @@
+const data = {
+    employees : require('../model/data.json'),
+    setEmployees : function (data){
+        this.employees = data;
+    }
+};
+
+const getAllEmployees = (req,res)=>{
+    res.json(data.employees);
+}
+
+const addEmployee = (req,res)=>{
+    const newEmployee = {
+        "id" : data.employees[data.employees.length-1].id + 1,
+        "firstName" : req.body.firstName,
+        "lastName" : req.body.lastName
+    }
+    if( !newEmployee.firstName || !newEmployee.lastName){
+        res.status(400).json({msg: 'First Name and Last Name are required'});
+    }
+    data.setEmployees([...data.employees,newEmployee]);
+    res.status(201).json(data.employees);
+};
+
+const updateEmployee = (req,res)=>{
+    const employee = data.employees.find(employee => employee.id === parseInt(req.body.id));
+    if(!employee){
+        res.status(404).json({"msg":`Employee with id ${req.body.id} not found`});
+        return;
+    }
+    if(req.body.firstName){
+        employee.firstName = req.body.firstName;
+    }
+    if(req.body.lastName){
+        employee.lastName = req.body.lastName;
+    }
+    const filteresEmployees = data.employees.filter(employee => employee.id != parseInt(req.params.id));
+    const unsortedEmployees = [...filteresEmployees,employee];
+    data.setEmployees(unsortedEmployees.sort((a,b)=>a.id-b.id));
+    res.json(data.employees);
+};
+
+const deleteEmployee = (req,res)=>{
+    const employee = data.employees.find(employee => employee.id === parseInt(req.body.id));
+    if(!employee){
+        res.status(400).json({"msg":`Employee with id ${req.body.id} not found`});
+        return;
+    }
+    const filteresEmployees = data.employees.filter(employee => employee.id != parseInt(req.body.id));
+    data.setEmployees([...filteresEmployees]);
+    res.json(data.employees);
+};
+
+const getEmployee = (req,res)=>{
+    const employee = data.employees.find(employee => employee.id === parseInt(req.params.id));
+    if(!employee){
+        res.status(400).json({"msg":`Employee with id ${req.body.id} not found`});
+    }
+    res.json(employee);
+    
+}
+
+module.exports = {
+    getAllEmployees,
+    addEmployee,
+    updateEmployee,
+    deleteEmployee,
+    getEmployee
+}
